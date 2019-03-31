@@ -1,0 +1,14 @@
+{application, type_tools,
+ [{description, "Use Types and Specs for validation etc"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Mozilla 2.0"]},
+  {links, []}
+ ]}.
