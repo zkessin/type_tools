@@ -9,16 +9,16 @@
 -module(type_validate).
 
 -include("include/types.hrl").
--export([validate_input/3])
+-export([input/3, parse_spec/1]).
 
--spec(validate_input(binary(), input_format(), spec()) -> {'ok', term()} | {'error', term()}).
+-spec(input(binary(), input_format(), spec()) -> success(term())).
 input(Input, Format, Spec) ->
     Data = decode(Input, Format),
     validate(Data, Spec).
 
 
-
-decode(Input, 'application/xml') ->
+-spec(decode(binary(), input_format()) -> term()).
+decode(_Input, 'application/xml') ->
     'nyi';
 decode(Input, 'text/json') ->
     jsx:decode(Input, [{labels, existing_atom}, return_maps]).
@@ -29,5 +29,6 @@ validate(Data, Spec) ->
     Validator(Data).
 
 
-parse_spec(_) ->
+-spec(parse_spec(spec()) -> fun((binary()) -> success(term()))).
+parse_spec(Spec) ->
     nyi.

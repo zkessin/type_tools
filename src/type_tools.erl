@@ -8,15 +8,15 @@
 %%%-------------------------------------------------------------------
 
 -module(type_tools).
+-include("include/types.hrl").
 
 %% API exports
 -export([validate_input/3]).
-
 
 %%====================================================================
 %% API functions
 %%====================================================================
 
--spec(validate_input(binary(), input_format(), spec()) -> {'ok', term()} | {'error', term()}).
+-spec(validate_input(binary(), input_format(), spec()) -> success(term())).
 validate_input(Input, Format, Spec) ->
     type_validate:input(Input, Format, Spec).
