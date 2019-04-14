@@ -31,20 +31,42 @@ validate(Data, Spec) ->
     {ok, Validator} = parse_spec(Spec),
     Validator(Data).
 
+
+is_type(binary, _key, V) when is_binary(V)->
+    V;
+is_type(integer, _key, V) when is_integer(V) ->
+    V;
+is_type(Type, Key, Value) ->
+    error({badtype, Key, Value, Type}).
+
 validate_input(_Spec = {{_Module, _FileLine, {type, _, tuple,
                                              [{atom, _, Key},
-                                              {type, _, _Type1, []}]},_},_},
+                                              {type, _, Type1, []}]},_},_},
                Input) when is_map(Input)->
+
     case maps:get(Key, Input, nokey) of
         nokey ->
-            {error, {badkey, Key}};
+            error( {badkey, Key});
         Value ->
-            {ok, #{Key => Value}}
+            #{Key => is_type(Type1, Key, Value)}
     end;
 validate_input(_Spec = {{_Module, _FileLine, {type, _, map,
-                                            _Fields},_}, _},
-               _Input) ->
-    {ok, b}.
+                                            Fields},_}, _},
+               Input) ->
+    lists:foldl(fun({type, _, map_field_exact, [{atom, _, FieldName}, {type, _, Type, []}]}, Map) ->
+                        case maps:get(FieldName, Input, nokey) of
+                            nokey -> error({badkey, FieldName});
+                            Value ->
+                                maps:put(FieldName,is_type(Type, FieldName,Value), Map)
+                        end;
+                   ({type, _, map_field_assoc, [{atom, _, FieldName}, {type, _, Type, []}]}, Map) ->
+                        case maps:get(FieldName, Input, nokey) of
+                            nokey -> Map;
+                            Value ->
+                                maps:put(FieldName, is_type(Type, FieldName,Value) , Map)
+                        end
+                end, maps:new(), Fields).
+
 
 
 
@@ -58,9 +80,6 @@ parse_spec({Module, Type, Arguments}) ->
        _Fields}, _}, any} = Spec,
 
     Validator  = fun(Input) ->
-                         ?debugFmt("~n~n~n~n********************************************************************************~n",[]),
-                         ?debugFmt("~n Spec ~p ~n Input ~p~n", [Spec, Input]),
-
-                         validate_input(Spec, Input)
+                        validate_input(Spec, Input)
                  end,
     {ok, Validator}.
